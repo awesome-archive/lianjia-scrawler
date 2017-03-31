@@ -1,4 +1,4 @@
-import urllib2
+import requests
 import random
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -18,9 +18,11 @@ hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) 
     {'User-Agent':'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11'}]
 
 #=========================Add proxy to prevent lianjia blocking=========================================
-# proxy_support = urllib2.ProxyHandler({"http":"http://115.46.77.230:8123"})
-# opener = urllib2.build_opener(proxy_support)
-# urllib2.install_opener(opener)
+# s = requests.Session()
+# proxies = {
+#         'http': 'http://127.0.0.1:8087',
+#         'https': 'http://127.0.0.1:8087',
+# }
 
 def get_today():
     now = datetime.now()
@@ -39,8 +41,10 @@ def get_today():
 
 def get_source_code(url):
     try:
-        req = urllib2.Request(url, headers=hds[random.randint(0,len(hds)-1)])
-        source_code = urllib2.urlopen(req, timeout=10).read()
+        #req = urllib2.Request(url, headers=hds[random.randint(0,len(hds)-1)])
+        #source_code = urllib2.urlopen(req, timeout=10).read()
+        result = requests.get(url, headers=hds[random.randint(0,len(hds)-1)])
+        source_code = result.content
         #soup = BeautifulSoup(source_code, 'lxml')
     except urllib2.HTTPError as e:
         print (e)
