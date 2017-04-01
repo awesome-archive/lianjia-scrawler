@@ -2,6 +2,8 @@
 from bs4 import BeautifulSoup
 import db
 import misc
+import time
+import urllib2
 
 def GetHouseByCelllist(conn,celllist=[u'荣丰2008',u'保利茉莉公馆']):
     db.celllist_init(conn)
@@ -29,6 +31,8 @@ def GetCellByRegionlist(conn,regionlist = [u'xicheng']):
 
 def get_house_percell(conn, cellname=u'荣丰2008'):
     url = u"http://bj.lianjia.com/ershoufang/rs" + urllib2.quote(cellname.encode('utf8')) + "/"
+    source_code = misc.get_source_code(url)
+    soup = BeautifulSoup(source_code, 'lxml')
     total_pages = misc.get_total_pages(url)
     info_dict_all = {}   # if each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
@@ -92,6 +96,8 @@ def get_house_percell(conn, cellname=u'荣丰2008'):
 
 def get_cell_perregion(conn, regionname=u'xicheng'):
     url = u"http://bj.lianjia.com/xiaoqu/" + regionname +"/"
+    source_code = misc.get_source_code(url)
+    soup = BeautifulSoup(source_code, 'lxml')
     total_pages = misc.get_total_pages(url)
     info_dict_all = {}   # if each house info_dict insert into database ,this info_dict_all is not needed
 

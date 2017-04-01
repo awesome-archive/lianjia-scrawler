@@ -46,9 +46,6 @@ def get_source_code(url):
         result = requests.get(url, headers=hds[random.randint(0,len(hds)-1)])
         source_code = result.content
         #soup = BeautifulSoup(source_code, 'lxml')
-    except urllib2.HTTPError as e:
-        print (e)
-        return
     except Exception as e:
         print (e)
         return

@@ -1,4 +1,5 @@
 import mysql.connector
+import misc
 
 def database_init(dbflag='local'):
      if dbflag == 'local':
@@ -66,7 +67,7 @@ def update_houseinfo(conn,info_dict):
             t.append('')
     t = tuple(t)    # for houseinfo
 
-    today = get_today()
+    today = misc.get_today()
     t2 = (info_dict[u'houseID'],today,info_dict[u'totalPrice'])  # for hisprice
 
     cursor = conn.cursor()
