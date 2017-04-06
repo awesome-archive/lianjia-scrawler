@@ -5,7 +5,7 @@ import core
 import db
 
 if __name__=="__main__":
-    regionlist = [u'xicheng', u'dongcheng', u'haidian', u'chaoyang']    # only pinyin support
+    regionlist = [u'yizhuangkaifaqu', u'shunyi', u'fangshan', u'tongzhou']    # only pinyin support
 
     dbflag = 'local'            # local,  remote
     conn = db.database_init(dbflag)
@@ -18,7 +18,8 @@ if __name__=="__main__":
         celllist.append(x)
     #celllist[1793:-6]=[]
     print "获取房屋信息"
-    core.GetHouseByCelllist(conn,celllist)
+    #core.GetHouseByCelllist(conn,celllist)
+    core.GetChengjiaoByCelllist(conn,celllist)
     conn.close()
     endtime =  datetime.now()
     print(u'the house spider time is ' + str(endtime-starttime))

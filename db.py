@@ -3,7 +3,7 @@ import misc
 
 def database_init(dbflag='local'):
      if dbflag == 'local':
-         conn = mysql.connector.connect(user='root', password='', database='lianjiaSpider', host='127.0.0.1')
+         conn = mysql.connector.connect(user='root', password='123456', database='lianjiaSpider', host='127.0.0.1')
      else:
          conn = mysql.connector.connect(user='user', password='password', database='lianjia', host='lianjia')
      dbc = conn.cursor()
@@ -16,6 +16,10 @@ def database_init(dbflag='local'):
      dbc.execute('create table if not exists hisprice (id int(10) NOT NULL AUTO_INCREMENT primary key,houseID varchar(50) , date varchar(50), totalPrice varchar(200))')
      dbc.execute('create table if not exists cellinfo (id int(10) NOT NULL AUTO_INCREMENT primary key,Title varchar(50) , link varchar(200),district varchar(50),bizcircle varchar(50),tagList varchar(200))')
 
+     dbc.execute('create table if not exists chengjiaoinfo (id int(10) NOT NULL AUTO_INCREMENT primary key,houseID varchar(50) , Title varchar(200), link varchar(200), cellname varchar(100),\
+                years varchar(200),housetype varchar(50),square varchar(50), direction varchar(50),floor varchar(50),status varchar(200), \
+                source varchar(200), totalPrice varchar(200), unitPrice varchar(200),dealdate varchar(50),updatedate varchar(20), validflag varchar(20))')
+
      conn.commit()
      dbc.close()
      return conn
@@ -24,6 +28,7 @@ def celllist_init(conn):
     cursor = conn.cursor()
     #all set unvaild
     cursor.execute('update houseinfo set validflag= %s',('0',))
+    cursor.execute('update chengjiaoinfo set validflag= %s',('0',))
     conn.commit()
     cursor.close()
 
@@ -97,6 +102,38 @@ def update_houseinfo(conn,info_dict):
         if float(Qres[u'totalPrice']) != float(info_dict[u'totalPrice']):    # str2float,when str2int is error
             info_dict[u'oldprice'] = Qres[u'totalPrice']
 #            trigger_notify_email(info_dict,'updateprice')
+
+    conn.commit()
+    cursor.close()
+
+def update_chengjiaoinfo(conn,info_dict):
+    info_list = [u'houseID',u'Title',u'link',u'cellname',u'years',u'housetype',u'square',u'direction',u'floor',\
+                u'status',u'totalPrice',u'unitPrice',u'dealdate',u'validflag',u'source',u'updatedate']
+    t = []
+    for il in info_list:
+        if il in info_dict:
+            t.append(info_dict[il])
+        else:
+            t.append('')
+    t = tuple(t)    # for chengjiaoinfo
+
+    cursor = conn.cursor()
+
+    cursor.execute('select * from chengjiaoinfo where houseID = (%s)',(info_dict[u'houseID'],))
+    values = cursor.fetchall()         #turple type
+    if len(values)>0:
+        nvs = zip(info_list,list(values[0][1:]))
+        Qres = dict( (info_list,value) for info_list,value in nvs)
+    else:
+        pass
+
+    if len(values) == 0:        # new house
+        cursor.execute('insert into chengjiaoinfo (houseID,Title,link,cellname,years,housetype,square,direction,floor,\
+                      status,totalPrice,unitPrice,dealdate,validflag,source,updatedate) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', t)
+    else:
+        cursor.execute('update chengjiaoinfo set totalPrice = %s,unitPrice = %s,status = %s,dealdate = %s,\
+                       validflag= %s, updatedate=%s where houseid = %s',(info_dict[u'totalPrice'],info_dict[u'unitPrice'],\
+                                                          info_dict[u'status'],info_dict[u'dealdate'],'1',info_dict[u'houseID'],info_dict[u'updatedate']))
 
     conn.commit()
     cursor.close()

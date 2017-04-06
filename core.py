@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import db
 import misc
 import time
+import datetime
 import urllib2
 
 def GetHouseByCelllist(conn,celllist=[u'荣丰2008',u'保利茉莉公馆']):
@@ -10,6 +11,18 @@ def GetHouseByCelllist(conn,celllist=[u'荣丰2008',u'保利茉莉公馆']):
     for cellname in celllist:
         try:
             get_house_percell(conn,cellname)
+            print cellname + u"搜索完成"
+        except Exception as e:
+            print (e)
+            print cellname + u"搜索失败"
+            pass
+    #return house         # unit test
+
+def GetChengjiaoByCelllist(conn,celllist=[u'荣丰2008',u'保利茉莉公馆']):
+    db.celllist_init(conn)
+    for cellname in celllist:
+        try:
+            get_chengjiao_percell(conn,cellname)
             print cellname + u"搜索完成"
         except Exception as e:
             print (e)
@@ -91,6 +104,70 @@ def get_house_percell(conn, cellname=u'荣丰2008'):
 
             info_dict_all[i+page*30] = info_dict
             time.sleep(1)
+
+    return info_dict_all
+
+def get_chengjiao_percell(conn, cellname=u'荣丰2008'):
+    url = u"http://bj.lianjia.com/chengjiao/rs" + urllib2.quote(cellname.encode('utf8')) + "/"
+    source_code = misc.get_source_code(url)
+    soup = BeautifulSoup(source_code, 'lxml')
+    total_pages = misc.get_total_pages(url)
+    info_dict_all = {}   # if each house info_dict insert into database ,this info_dict_all is not needed
+    for page in range(total_pages):
+        if page > 0:
+            url_page = u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (page+1, urllib2.quote(cellname.encode('utf8')))
+            source_code = misc.get_source_code(url_page)
+            soup = BeautifulSoup(source_code, 'lxml')
+        i = 0
+        for ultag in soup.findAll("ul", {"class":"listContent"}):
+            for name in ultag.find_all('li'):
+                i = i + 1
+                info_dict = {}
+                info_dict_all.setdefault(i+page*30, {})
+
+                housetitle = name.find("div", {"class":"title"})  #html
+                info_dict.update({u'Title':housetitle.get_text().strip()})
+                info_dict.update({u'link':housetitle.a.get('href')})   #atrribute get
+                houseID = int(housetitle.a.get('href').split("/")[-1].split(".")[0])
+                info_dict.update({u'houseID':houseID})
+
+                house = housetitle.get_text().strip().split(' ')
+                info_dict.update({u'cellname':house[0]})
+                info_dict.update({u'housetype':house[1]})
+                info_dict.update({u'square':house[2]})
+
+                houseinfo = name.find("div", {"class":"houseInfo"})
+                info = houseinfo.get_text().split('|')
+                info_dict.update({u'direction':info[0]})
+                info_dict.update({u'status':info[1]})
+
+                housefloor = name.find("div", {"class":"positionInfo"})
+                floor_all = housefloor.get_text().strip().split(' ')
+                info_dict.update({u'floor':floor_all[0]})
+                info_dict.update({u'years':floor_all[-1]})
+
+                followInfo = name.find("div", {"class":"source"})
+                info_dict.update({u'source':followInfo.get_text()})
+
+                totalPrice = name.find("div", {"class":"totalPrice"})
+                info_dict.update({u'totalPrice':totalPrice.span.get_text()})
+
+                unitPrice = name.find("div", {"class":"unitPrice"})
+                info_dict.update({u'unitPrice':unitPrice.span.get_text()})
+
+                dealDate= name.find("div", {"class":"dealDate"})
+                info_dict.update({u'dealdate':dealDate.get_text()})
+                info_dict.update({u'validflag':str('1')})
+                
+                today = misc.get_today()
+                info_dict.update({u'updatedate':today})
+
+                # houseinfo insert into mysql
+                db.update_chengjiaoinfo(conn,info_dict)
+
+                info_dict_all[i+page*30] = info_dict
+                time.sleep(1)
+
 
     return info_dict_all
 
