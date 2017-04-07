@@ -1,25 +1,13 @@
-# -*- coding: utf-8 -*-
-
-from datetime import datetime
 import core
 import db
 
 if __name__=="__main__":
-    regionlist = [u'yizhuangkaifaqu', u'shunyi', u'fangshan', u'tongzhou']    # only pinyin support
+    regionlist = [u'chaoyang', u'dongcheng', u'xicheng', u'haidian'] # only pinyin support
 
-    dbflag = 'local'            # local,  remote
+    dbflag = 'local' # local,  remote
     conn = db.database_init(dbflag)
-    print "获取小区信息"
-    #core.GetCellByRegionlist(conn,regionlist)         # init,scrapy celllist and insert database; could run only 1st time
-    starttime = datetime.now()
-    celllist = db.get_celllist(conn)    #  read celllist from database
-    myfavor = [u'蓝色家族',u'望京明苑',u'星源国际',u'',u'银领国际',u'望京西园三区',u'望京西园一区']
-    for x in myfavor:
-        celllist.append(x)
-    #celllist[1793:-6]=[]
-    print "获取房屋信息"
+    #core.GetCellByRegionlist(conn,regionlist) # Init,scrapy celllist and insert database; could run only 1st time
+    celllist = db.get_celllist(conn) # Read celllist from database
     #core.GetHouseByCelllist(conn,celllist)
-    core.GetChengjiaoByCelllist(conn,celllist)
+    core.GetSellByCelllist(conn, celllist)
     conn.close()
-    endtime =  datetime.now()
-    print(u'the house spider time is ' + str(endtime-starttime))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import requests
 import random
 from datetime import datetime
@@ -34,7 +33,7 @@ hd = {
     'Referer': 'http://captcha.lianjia.com/?redirect=http%3A%2F%2Fbj.lianjia.com%2Fxiaoqu%2Fxicheng%2F',
     'Accept-Encoding': 'gzip, deflate, sdch',
     'Accept-Language': 'zh-CN,zh;q=0.8',
-    'Cookie': 'all-lj=ae53ba2bb01d9055b48cc0081f0ce3f9; lianjia_uuid=eb8ad88b-51b6-4536-b30e-8510f5095a31; UM_distinctid=15b2e967f0425b-058036b3f786e6-1d3a6853-1fa400-15b2e967f053e4; select_city=110000; _smt_uid=58e0eb23.419cbb57; CNZZDATA1253477573=705813043-1491130452-null%7C1491227721; CNZZDATA1254525948=720754788-1491131771-null%7C1491224601; CNZZDATA1255633284=713550089-1491131528-null%7C1491225849; CNZZDATA1255604082=665248520-1491130401-null%7C1491227607; _gat=1; _gat_past=1; _gat_global=1; _gat_new_global=1; _ga=GA1.2.1914918537.1491135269; _gat_dianpu_agent=1; lianjia_ssid=989fe080-a977-4731-b889-db15c1db5347'
+    'Cookie': 'lianjia_uuid=31746070-1dfd-441b-9dac-a762d90294a5; UM_distinctid=15b12d80b45179-0d64c7a3f6681e-1d396853-1fa400-15b12d80b46247; introduce=1; all-lj=c28812af28ef34a41ba2474a2b5c52c2; select_city=110000; _jzqx=1.1490669800.1491529315.3.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/; _jzqckmp=1; CNZZDATA1253477573=1526314437-1490666871-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491525581; _smt_uid=58d9d0e8.bf2821b; CNZZDATA1254525948=497550824-1490668493-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491527170; CNZZDATA1255633284=1227338008-1490665030-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491529075; CNZZDATA1255604082=1285546817-1490665213-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491529283; _qzja=1.866324558.1490669800393.1490941575494.1491529315136.1491529677322.1491530677583.0.0.0.54.10; _qzjb=1.1491529315136.4.0.0.0; _qzjc=1; _qzjto=4.1.0; _jzqa=1.1305601964964521000.1490669800.1490941575.1491529315.10; _jzqc=1; _jzqb=1.4.10.1491529315.1; _gat=1; _gat_past=1; _gat_global=1; _gat_new_global=1; _ga=GA1.2.48956529.1490669802; _gat_dianpu_agent=1; lianjia_ssid=6fa2fc72-0887-4093-aab6-2345792b86d3'
     }
 
 def get_today():
@@ -62,18 +61,6 @@ def get_source_code(url):
         print (e)
         return
 
-    soup = BeautifulSoup(source_code, "html.parser")
-
-    try:
-        error = soup.title.text
-        if error == u"验证异常流量-链家网":
-            print u'ip被封 请尝试更换代理'
-            return
-        else:
-            pass
-    except:
-        pass
-
     return source_code
 
 def get_total_pages(url):
@@ -86,7 +73,6 @@ def get_total_pages(url):
         page_info = None
 
     if page_info == None:
-        print "Lianjia block us:("
         return None
     page_info_str = page_info.get('page-data').split(',')[0]  #'{"totalPage":5,"curPage":1}'
     total_pages = int(page_info_str.split(':')[1])
