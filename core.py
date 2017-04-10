@@ -5,7 +5,7 @@ import time
 import datetime
 import urllib2
 
-def GetHouseByCelllist(conn,celllist):
+def GetHouseByCelllist(conn, celllist):
     print "Get House Infomation"
     starttime = datetime.datetime.now()
     db.celllist_init(conn)
@@ -20,7 +20,7 @@ def GetHouseByCelllist(conn,celllist):
     endtime = datetime.datetime.now()
     print('Run time: ' + str(endtime - starttime))
 
-def GetSellByCelllist(conn,celllist):
+def GetSellByCelllist(conn, celllist):
     print "Get Sell Infomation"
     starttime = datetime.datetime.now()
     db.celllist_init(conn)
@@ -35,7 +35,21 @@ def GetSellByCelllist(conn,celllist):
     endtime = datetime.datetime.now()
     print('Run time: ' + str(endtime - starttime))
 
-def GetCellByRegionlist(conn,regionlist = [u'xicheng']):
+def GetRentByCelllist(conn, celllist):
+    print "Get Rent Infomation"
+    starttime = datetime.datetime.now()
+    for cellname in celllist:
+        try:
+            get_rent_percell(conn,cellname)
+            print cellname + "Done"
+        except Exception as e:
+            print (e)
+            print cellname + "Fail"
+            pass
+    endtime = datetime.datetime.now()
+    print('Run time: ' + str(endtime - starttime))
+
+def GetCellByRegionlist(conn, regionlist = [u'xicheng']):
     print "Get Cell Infomation"
     starttime = datetime.datetime.now()
     for regionname in regionlist:
@@ -56,7 +70,7 @@ def get_house_percell(conn, cellname):
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
-        row = db.get_row('houseinfo')
+        row = db.get_row(conn, 'houseinfo')
         print "Finish at %s because lianjia block us" % row
         return
 
@@ -123,7 +137,7 @@ def get_sell_percell(conn, cellname):
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
-        row = db.get_row('sellinfo')
+        row = db.get_row(conn, 'sellinfo')
         print "Finish at %s because lianjia block us" % row
         return
 
@@ -193,7 +207,7 @@ def get_cell_perregion(conn, regionname=u'xicheng'):
     info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     
     if total_pages == None:
-        row = db.get_row('cellinfo')
+        row = db.get_row(conn, 'cellinfo')
         print "Finish at %s because lianjia block us" % row
         return
 
@@ -228,3 +242,71 @@ def get_cell_perregion(conn, regionname=u'xicheng'):
 
             info_dict_all[i+page*30] = info_dict
             time.sleep(1)
+
+def get_rent_percell(conn, cellname):
+    url = u"http://bj.lianjia.com/zufang/rs" + urllib2.quote(cellname.encode('utf8')) + "/"
+    source_code = misc.get_source_code(url)
+    soup = BeautifulSoup(source_code, 'lxml')
+    total_pages = misc.get_total_pages(url)
+
+    if total_pages == None:
+        row = db.get_row(conn, 'rentinfo')
+        print "Finish at %s because lianjia block us" % row
+        return
+
+    info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
+    for page in range(total_pages):
+        if page > 0:
+            url_page = u"http://bj.lianjia.com/rent/pg%drs%s/" % (page+1, urllib2.quote(cellname.encode('utf8')))
+            source_code = misc.get_source_code(url_page)
+            soup = BeautifulSoup(source_code, 'lxml')
+        i = 0
+        for ultag in soup.findAll("ul", {"class":"house-lst"}):
+            for name in ultag.find_all('li'):
+                i = i + 1
+                info_dict = {}
+                info_dict_all.setdefault(i+page*30, {})
+
+                try:
+                    housetitle = name.find("div", {"class":"info-panel"})  #html
+                    info_dict.update({u'Title':housetitle.get_text().strip()})
+                    info_dict.update({u'link':housetitle.a.get('href')})   #atrribute get
+                    houseID = int(housetitle.a.get('href').split("/")[-1].split(".")[0])
+                    info_dict.update({u'houseID':houseID})
+
+                    region = name.find("span", {"class":"region"})
+                    info_dict.update({u'region':region.get_text().strip()})
+
+                    zone = name.find("span", {"class":"zone"})
+                    info_dict.update({u'zone':zone.get_text().strip()})
+
+                    meters = name.find("span", {"class":"meters"})
+                    info_dict.update({u'meters':meters.get_text().strip()})
+
+                    other = name.find("div", {"class":"con"})
+                    info_dict.update({u'other':other.get_text().strip()})
+
+                    subway = name.find("span", {"class":"fang-subway-ex"})
+                    info_dict.update({u'subway':subway.span.get_text()})
+
+                    decoration = name.find("span", {"class":"decoration-ex"})
+                    info_dict.update({u'decoration':decoration.span.get_text()})
+
+                    heating = name.find("span", {"class":"heating-ex"})
+                    info_dict.update({u'heating':heating.span.get_text()})
+
+                    price = name.find("div", {"class":"price"})
+                    info_dict.update({u'price':price.span.get_text().strip()})
+
+                    pricepre = name.find("div", {"class":"price-pre"})
+                    info_dict.update({u'pricepre':pricepre.get_text().strip()})
+
+                    today = misc.get_today()
+                    info_dict.update({u'updatedate':today})
+                except:
+                    continue
+                # Houseinfo insert into mysql
+                db.update_rentinfo(conn,info_dict)
+
+                info_dict_all[i+page*30] = info_dict
+                time.sleep(1)

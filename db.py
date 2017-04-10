@@ -20,6 +20,10 @@ def database_init(dbflag='local'):
                 years varchar(200),housetype varchar(50),square varchar(50), direction varchar(50),floor varchar(50),status varchar(200), \
                 source varchar(200), totalPrice varchar(200), unitPrice varchar(200),dealdate varchar(50),updatedate varchar(20), validflag varchar(20))')
 
+     dbc.execute('create table if not exists rentinfo (id int(10) NOT NULL AUTO_INCREMENT primary key,houseID varchar(50) , Title varchar(200), link varchar(200), region varchar(100),\
+                zone varchar(200),meters varchar(50),other varchar(50), subway varchar(50),decoration varchar(50),heating varchar(200), \
+                price varchar(200), pricepre varchar(200), updatedate varchar(20))')
+
      conn.commit()
      dbc.close()
      return conn
@@ -43,7 +47,7 @@ def get_celllist(conn):
 
     return celllist
 
-def update_cellinfo(conn,info_dict):
+def update_cellinfo(conn, info_dict):
 
     t = (info_dict[u'Title'],info_dict[u'link'],info_dict[u'district'],info_dict[u'bizcircle'],info_dict[u'tagList'])  # for cellinfo
 
@@ -61,7 +65,7 @@ def update_cellinfo(conn,info_dict):
     conn.commit()
     cursor.close()
 
-def update_houseinfo(conn,info_dict):
+def update_houseinfo(conn, info_dict):
     info_list = [u'houseID',u'Title',u'link',u'cellname',u'years',u'housetype',u'square',u'direction',u'floor',\
                 u'taxtype',u'totalPrice',u'unitPrice',u'followInfo',u'validdate',u'validflag']
     t = []
@@ -104,7 +108,7 @@ def update_houseinfo(conn,info_dict):
     conn.commit()
     cursor.close()
 
-def update_sellinfo(conn,info_dict):
+def update_sellinfo(conn, info_dict):
     info_list = [u'houseID',u'Title',u'link',u'cellname',u'years',u'housetype',u'square',u'direction',u'floor',\
                 u'status',u'totalPrice',u'unitPrice',u'dealdate',u'validflag',u'source',u'updatedate']
     t = []
@@ -136,7 +140,38 @@ def update_sellinfo(conn,info_dict):
     conn.commit()
     cursor.close()
 
-def get_row(table):
+def update_rentinfo(conn, info_dict):
+    info_list = [u'houseID',u'Title',u'link',u'region',u'zone',u'meters',u'other',u'subway',u'decoration',\
+                u'heating',u'price',u'pricepre',u'updatedate']
+    t = []
+    for il in info_list:
+        if il in info_dict:
+            t.append(info_dict[il])
+        else:
+            t.append('')
+    t = tuple(t) #for sellinfo
+
+    cursor = conn.cursor()
+
+    cursor.execute('select * from rentinfo where houseID = (%s)',(info_dict[u'houseID'],))
+    values = cursor.fetchall() #turple type
+    if len(values)>0:
+        nvs = zip(info_list,list(values[0][1:]))
+        Qres = dict( (info_list,value) for info_list,value in nvs)
+    else:
+        pass
+
+    if len(values) == 0: #new house
+        cursor.execute('insert into rentinfo (houseID,Title,link,region,zone,meters,other,subway,decoration,\
+                      heating,price,pricepre,updatedate) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', t)
+    else:
+        cursor.execute('update rentinfo set price = %s,pricepre = %s, updatedate=%s where houseid = %s',\
+                    (info_dict[u'price'],info_dict[u'pricepre'],info_dict[u'updatedate']))
+
+    conn.commit()
+    cursor.close()
+
+def get_row(conn, table):
     cursor = conn.cursor()
     sql_script = 'SELECT * FROM %s' % table
     row = cursor.execute(sql_script)
