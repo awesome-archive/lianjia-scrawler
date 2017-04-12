@@ -1,14 +1,17 @@
 import core
-import db
+import model
+
+def get_communitylist():
+	res = []
+	for community in model.Community.select():
+		res.append(community.title)
+	return res
 
 if __name__=="__main__":
-    regionlist = [u'chaoyang', u'dongcheng', u'xicheng', u'haidian'] # only pinyin support
-
-    dbflag = 'local' # local,  remote
-    conn = db.database_init(dbflag)
-    #core.GetCellByRegionlist(conn,regionlist) # Init,scrapy celllist and insert database; could run only 1st time
-    celllist = db.get_celllist(conn) # Read celllist from database
-    #core.GetHouseByCelllist(conn, celllist)
-    core.GetSellByCelllist(conn, celllist)
-    #core.GetRentByCelllist(conn, celllist)
-    conn.close()
+    regionlist = [u'chaoyang'] # only pinyin support
+    model.database_init()
+    #core.GetCommunityByRegionlist(regionlist) # Init,scrapy celllist and insert database; could run only 1st time
+    communitylist = get_communitylist() # Read celllist from database
+    core.GetHouseByCommunitylist(communitylist)
+    core.GetRentByCommunitylist(communitylist)
+    core.GetSellByCommunitylist(communitylist)
