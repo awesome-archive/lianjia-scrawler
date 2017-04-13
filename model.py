@@ -1,7 +1,17 @@
 from peewee import *
 import datetime
+from ConfigParser import SafeConfigParser
 
-database = MySQLDatabase("test", host="127.0.0.1", port=3306, user="root", passwd="")
+config = SafeConfigParser()
+config.read('config.ini')
+
+database = MySQLDatabase(
+		config.get('mysql', 'scheme'), 
+		host=config.get('mysql', 'host'), 
+		port=config.getint('mysql', 'port'), 
+		user=config.get('mysql', 'user'), 
+		passwd=config.get('mysql', 'password'),
+	)
 
 class BaseModel(Model):
     class Meta:

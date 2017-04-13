@@ -4,16 +4,28 @@ This repo provides a tool to scrawl house info at LianJia.com. The data will be 
 This tool could collect cellname from each region at first, then you'd like to use these cellnames to learn about onsale, history price, sold and rent information.
 
 ## Usage
++ Download source code and install package dependency. 
 ```
-git clone https://github.com/XuefengHuang/lianjia-scrawler.git
-cd lianjia-scrawler
-virtualenv lianjia
-source lianjia/bin/activate
-pip install -r requirements.txt
-# Modify database config in model.py at this part: database = MySQLDatabase("SCHEME", host="YOUR_MYSQL_HOST", port=3306, user="USERNAME", passwd="PASSWORD")
-# Example: database = MySQLDatabase("lianjia", host="127.0.0.1", port=3306, user="root", passwd="123456")
-python scrawl.py
+1. git clone https://github.com/XuefengHuang/lianjia-scrawler.git
+2. cd lianjia-scrawler
+# If you'd like not to use [virtualenv](https://virtualenv.pypa.io/en/stable/), please skip step 3 and 4.
+3. virtualenv lianjia
+4. source lianjia/bin/activate
+5. pip install -r requirements.txt
 ```
++ Setting DB config at config.ini
+```
+[mysql]
+scheme = test
+host = 127.0.0.1
+port = 3306
+user = root
+password = 123456
+```
+
++ Please add your favor region at scrawl.py `regionlist = [u'chaoyang', u'xicheng', u'dongcheng'] # only pinyin support`
+
++ Start `python scrawl.py` and enjoy! (Please comment line13 if you have already got community list)
 
 ## Database Information
 ```
