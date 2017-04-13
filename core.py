@@ -4,62 +4,65 @@ import misc
 import time
 import datetime
 import urllib2
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 def GetHouseByCommunitylist(communitylist):
-    print "Get House Infomation"
+    logging.info("Get House Infomation")
     starttime = datetime.datetime.now()
     for community in communitylist:
         try:
             get_house_percommunity(community)
-            print community + "Done"
+            logging.info(community + "Done")
         except Exception as e:
-            print (e)
-            print community + "Fail"
+            logging.error(e)
+            logging.error(community + "Fail")
             pass
     endtime = datetime.datetime.now()
-    print('Run time: ' + str(endtime - starttime))
+    logging.info("Run time: " + str(endtime - starttime))
 
 def GetSellByCommunitylist(communitylist):
-    print "Get Sell Infomation"
+    logging.info("Get Sell Infomation")
     starttime = datetime.datetime.now()
     for community in communitylist:
         try:
             get_sell_percommunity(community)
-            print community + "Done"
+            logging.info(community + "Done")
         except Exception as e:
-            print (e)
-            print community + "Fail"
+            logging.error(e)
+            logging.error(community + "Fail")
             pass
     endtime = datetime.datetime.now()
-    print('Run time: ' + str(endtime - starttime))
+    logging.info("Run time: " + str(endtime - starttime))
 
 def GetRentByCommunitylist(communitylist):
-    print "Get Rent Infomation"
+    logging.info("Get Rent Infomation")
     starttime = datetime.datetime.now()
     for community in communitylist:
         try:
             get_rent_percommunity(community)
-            print community + "Done"
+            logging.info(community + "Done")
         except Exception as e:
-            print (e)
-            print community + "Fail"
+            logging.error(e)
+            logging.error(community + "Fail")
             pass
     endtime = datetime.datetime.now()
-    print('Run time: ' + str(endtime - starttime))
+    logging.info("Run time: " + str(endtime - starttime))
 
-def GetCommunityByRegionlist(regionlist = [u'xicheng']):
-    print "Get Community Infomation"
+def GetCommunityByRegionlist(regionlist=[u'xicheng']):
+    logging.info("Get Community Infomation")
     starttime = datetime.datetime.now()
     for regionname in regionlist:
         try:
             get_community_perregion(regionname)
-            print regionname + "Done"
+            logger.info(community + "Done")
         except Exception as e:
-            print (e)
-            print regionname + "Fail"
+            logging.error(e)
+            logger.error(community + "Fail")
             pass
     endtime = datetime.datetime.now()
-    print('Run time: ' + str(endtime - starttime)) 
+    logging.info("Run time: " + str(endtime - starttime))
 
 def get_house_percommunity(communityname):
     url = u"http://bj.lianjia.com/ershoufang/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
@@ -68,9 +71,8 @@ def get_house_percommunity(communityname):
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
-        #row = db.get_row(conn, 'houseinfo')
-        #print "Finish at %s because lianjia block us" % row
-        return
+        row = model.Houseinfo.select().count()
+        raise RuntimeError("Finish at %s because total_pages is None" % row)
 
     info_dict_all = {} # if each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
@@ -132,9 +134,8 @@ def get_sell_percommunity(communityname):
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
-        #row = db.get_row(conn, 'sellinfo')
-        #print "Finish at %s because lianjia block us" % row
-        return
+        row = model.Sellinfo.select().count()
+        raise RuntimeError("Finish at %s because total_pages is None" % row)
 
     info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
@@ -198,9 +199,8 @@ def get_community_perregion(regionname=u'xicheng'):
     info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     
     if total_pages == None:
-        #row = db.get_row(conn, 'communityinfo')
-        #print "Finish at %s because lianjia block us" % row
-        return
+        row = model.Community.select().count()
+        raise RuntimeError("Finish at %s because total_pages is None" % row)
 
     for page in range(total_pages):
         if page > 0:
@@ -241,9 +241,8 @@ def get_rent_percommunity(communityname):
     total_pages = misc.get_total_pages(url)
 
     if total_pages == None:
-        #row = db.get_row(conn, 'rentinfo')
-        #print "Finish at %s because lianjia block us" % row
-        return
+        row = model.Rentinfo.select().count()
+        raise RuntimeError("Finish at %s because total_pages is None" % row)
 
     info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
@@ -278,13 +277,13 @@ def get_rent_percommunity(communityname):
                     info_dict.update({u'other':other.get_text().strip()})
 
                     subway = name.find("span", {"class":"fang-subway-ex"})
-                    info_dict.update({u'subway':subway.span.get_text()})
+                    info_dict.update({u'subway':subway.span.get_text().strip()})
 
                     decoration = name.find("span", {"class":"decoration-ex"})
-                    info_dict.update({u'decoration':decoration.span.get_text()})
+                    info_dict.update({u'decoration':decoration.span.get_text().strip()})
 
                     heating = name.find("span", {"class":"heating-ex"})
-                    info_dict.update({u'heating':heating.span.get_text()})
+                    info_dict.update({u'heating':heating.span.get_text().strip()})
 
                     price = name.find("div", {"class":"price"})
                     info_dict.update({u'price':int(price.span.get_text().strip())})

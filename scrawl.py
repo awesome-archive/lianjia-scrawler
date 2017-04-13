@@ -10,7 +10,7 @@ def get_communitylist():
 if __name__=="__main__":
     regionlist = [u'chaoyang'] # only pinyin support
     model.database_init()
-    #core.GetCommunityByRegionlist(regionlist) # Init,scrapy celllist and insert database; could run only 1st time
+    core.GetCommunityByRegionlist(regionlist) # Init,scrapy celllist and insert database; could run only 1st time
     communitylist = get_communitylist() # Read celllist from database
     core.GetHouseByCommunitylist(communitylist)
     core.GetRentByCommunitylist(communitylist)

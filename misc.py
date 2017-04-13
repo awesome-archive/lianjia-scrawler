@@ -33,6 +33,33 @@ hd = {
     'Cookie': 'lianjia_uuid=31746070-1dfd-441b-9dac-a762d90294a5; UM_distinctid=15b12d80b45179-0d64c7a3f6681e-1d396853-1fa400-15b12d80b46247; introduce=1; all-lj=c28812af28ef34a41ba2474a2b5c52c2; select_city=110000; _jzqx=1.1490669800.1491529315.3.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/.jzqsr=captcha%2Elianjia%2Ecom|jzqct=/; _jzqckmp=1; CNZZDATA1253477573=1526314437-1490666871-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491525581; _smt_uid=58d9d0e8.bf2821b; CNZZDATA1254525948=497550824-1490668493-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491527170; CNZZDATA1255633284=1227338008-1490665030-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491529075; CNZZDATA1255604082=1285546817-1490665213-http%253A%252F%252Fcaptcha.lianjia.com%252F%7C1491529283; _qzja=1.866324558.1490669800393.1490941575494.1491529315136.1491529677322.1491530677583.0.0.0.54.10; _qzjb=1.1491529315136.4.0.0.0; _qzjc=1; _qzjto=4.1.0; _jzqa=1.1305601964964521000.1490669800.1490941575.1491529315.10; _jzqc=1; _jzqb=1.4.10.1491529315.1; _gat=1; _gat_past=1; _gat_global=1; _gat_new_global=1; _ga=GA1.2.48956529.1490669802; _gat_dianpu_agent=1; lianjia_ssid=6fa2fc72-0887-4093-aab6-2345792b86d3'
     }
 
+def get_source_code(url):
+    try:
+        #result = requests.get(url, headers=hds[random.randint(0,len(hds)-1)])
+        result = requests.get(url, headers=hd)
+        source_code = result.content
+    except Exception as e:
+        print (e)
+        return
+
+    return source_code
+
+def get_total_pages(url):
+    source_code = get_source_code(url)
+    soup = BeautifulSoup(source_code, 'lxml')
+    total_pages = 0
+    try:
+        page_info = soup.find('div',{'class':'page-box house-lst-page-box'})
+    except AttributeError as e:
+        page_info = None
+
+    if page_info == None:
+        return None
+    page_info_str = page_info.get('page-data').split(',')[0]  #'{"totalPage":5,"curPage":1}'
+    total_pages = int(page_info_str.split(':')[1])
+    return total_pages
+
+#===========proxy ip spider, we do not use now because it is not stable===========
 proxys_src = []
 proxys = []
 
@@ -109,46 +136,4 @@ def readurl_by_proxy(url):
         print ('proxys new length is:' + str(len(proxys)))
         return None
 
-    return source_code
-
-def get_today():
-    now = datetime.now()
-    m = now.month
-    d = now.day
-    if m < 10:
-        ms = '0' + str(m)
-    else:
-        ms = str(m)
-    if d < 10:
-        ds = '0' + str(d)
-    else:
-        ds = str(d)
-    today = str(now.year) + ms + ds
-    return today
-
-def get_source_code(url):
-    try:
-        #req = urllib2.Request(url, headers=hds[random.randint(0,len(hds)-1)])
-        #source_code = urllib2.urlopen(req, timeout=10).read()
-        result = requests.get(url, headers=hd)
-        source_code = result.content
-    except Exception as e:
-        print (e)
-        return
-
-    return source_code
-
-def get_total_pages(url):
-    source_code = get_source_code(url)
-    soup = BeautifulSoup(source_code, 'lxml')
-    total_pages = 0
-    try:
-        page_info = soup.find('div',{'class':'page-box house-lst-page-box'})
-    except AttributeError as e:
-        page_info = None
-
-    if page_info == None:
-        return None
-    page_info_str = page_info.get('page-data').split(',')[0]  #'{"totalPage":5,"curPage":1}'
-    total_pages = int(page_info_str.split(':')[1])
-    return total_pages 
+    return source_code 
