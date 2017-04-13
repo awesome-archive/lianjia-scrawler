@@ -3,6 +3,18 @@ This repo provides a tool to scrawl house info at LianJia.com. The data will be 
 
 This tool could collect cellname from each region at first, then you'd like to use these cellnames to learn about onsale, history price, sold and rent information.
 
+## Usage
+```
+git clone https://github.com/XuefengHuang/lianjia-scrawler.git
+cd lianjia-scrawler
+virtualenv lianjia
+source lianjia/bin/activate
+pip install -r requirements.txt
+# Modify database config in model.py at this part: database = MySQLDatabase("SCHEME", host="YOUR_MYSQL_HOST", port=3306, user="USERNAME", passwd="PASSWORD")
+# Example: database = MySQLDatabase("lianjia", host="127.0.0.1", port=3306, user="root", passwd="123456")
+python scrawl.py
+```
+
 ## Database Information
 ```
 # All communities in every region. 
@@ -73,19 +85,6 @@ class Rentinfo(BaseModel):
 	price 		= IntegerField()
 	pricepre 	= CharField()
 	updatedate 	= DateTimeField(default=datetime.datetime.now)
-```
-
-## Usage
-```
-git clone https://github.com/XuefengHuang/lianjia-scrawler.git
-cd lianjia-scrawler
-virtualenv lianjia
-source lianjia/bin/activate
-pip install -r requirements.txt
-# Modify database config at model.py
-# Modify this part: database = MySQLDatabase("SCHEME", host="YOUR_MYSQL_HOST", port=3306, user="USERNAME", passwd="PASSWORD")
-# Example: database = MySQLDatabase("test", host="127.0.0.1", port=3306, user="root", passwd="")
-python scrawl.py
 ```
 
 ## Examples:
