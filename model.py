@@ -7,15 +7,15 @@ config.read('config.ini')
 
 if config.getboolean('Mysql', 'enable'):
 	database = MySQLDatabase(
-		config.get('mysql', 'scheme'), 
-		host=config.get('mysql', 'host'), 
-		port=config.getint('mysql', 'port'), 
-		user=config.get('mysql', 'user'), 
-		passwd=config.get('mysql', 'password'),
+		config.get('Mysql', 'scheme'),
+		host=config.get('Mysql', 'host'),
+		port=config.getint('Mysql', 'port'),
+		user=config.get('Mysql', 'user'),
+		passwd=config.get('Mysql', 'password'),
 	)
 
 elif config.getboolean('Sqlite', 'enable'):
-	database = SqliteDatabase(config.get('sqlite', 'dbname'))
+	database = SqliteDatabase(config.get('Sqlite', 'dbname'))
 
 elif config.getboolean('Postgresql', 'enable'):
 	database = PostgresqlDatabase(
