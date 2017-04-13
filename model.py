@@ -5,13 +5,28 @@ from ConfigParser import SafeConfigParser
 config = SafeConfigParser()
 config.read('config.ini')
 
-database = MySQLDatabase(
+if config.getboolean('Mysql', 'enable'):
+	database = MySQLDatabase(
 		config.get('mysql', 'scheme'), 
 		host=config.get('mysql', 'host'), 
 		port=config.getint('mysql', 'port'), 
 		user=config.get('mysql', 'user'), 
 		passwd=config.get('mysql', 'password'),
 	)
+
+elif config.getboolean('Sqlite', 'enable'):
+	database = SqliteDatabase(config.get('sqlite', 'dbname'))
+
+elif config.getboolean('Postgresql', 'enable'):
+	database = PostgresqlDatabase(
+		config.get('Postgresql', 'scheme'),
+		user=config.get('Postgresql', 'user'),
+		password=config.get('Postgresql', 'password'),
+		host=config.get('Postgresql', 'host'),
+	)
+
+else:
+	raise AttributeError("Please enable a datatbase at config.ini")
 
 class BaseModel(Model):
     class Meta:
