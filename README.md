@@ -1,7 +1,8 @@
 # lianjia-scrawler
-This repo provides a tool to scrawl house info at LianJia.com. The data will be stored in Mysql datatbase. It will be easy to export to CSV or other formates. You also can [sync Mysql to Elasticsearch](https://github.com/siddontang/go-mysql-elasticsearch). In this way, you can use [kibana](https://github.com/elastic/kibana) to analyse these data.
-
-This tool could collect cellname from each region at first, then you'd like to use these cellnames to learn about onsale, history price, sold and rent information.
++ This repo provides a tool to scrawl house info at LianJia.com and data would be stored in Mysql datatbase (Currently it also supports Sqlite and Postgres). It is easy to export to CSV or other formates. 
++ You also can [sync Mysql to Elasticsearch](https://github.com/siddontang/go-mysql-elasticsearch). In this way, you can use [kibana](https://github.com/elastic/kibana) to analyse these data.
++ This tool could collect community infomation from each region at first, then you'd like to use these communities to learn about onsale, history price, sold and rent information.
++ Please modify cookie info when this tool is blocked by lianjia due to ip traffic issue.
 
 ## Usage
 + Download source code and install package dependency. 
@@ -15,12 +16,24 @@ This tool could collect cellname from each region at first, then you'd like to u
 ```
 + Setting DB config at config.ini
 ```
-[mysql]
+[Mysql]
+enable = True
 scheme = test
 host = 127.0.0.1
 port = 3306
 user = root
-password = 123456
+password = secret
+
+[Sqlite]
+enable = False
+dbname = lianjia.db
+
+[Postgresql]
+enable = False
+scheme = test
+host = 127.0.0.1
+user = postgres
+password = secret
 ```
 
 + Please add your favor region at scrawl.py `regionlist = [u'chaoyang', u'xicheng', u'dongcheng'] # only pinyin support`
