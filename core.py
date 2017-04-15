@@ -56,10 +56,10 @@ def GetCommunityByRegionlist(regionlist=[u'xicheng']):
     for regionname in regionlist:
         try:
             get_community_perregion(regionname)
-            logger.info(community + "Done")
+            logging.info(regionname + "Done")
         except Exception as e:
             logging.error(e)
-            logger.error(community + "Fail")
+            logging.error(regionname + "Fail")
             pass
     endtime = datetime.datetime.now()
     logging.info("Run time: " + str(endtime - starttime))
