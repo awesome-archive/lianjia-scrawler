@@ -12,6 +12,8 @@ if config.getboolean('Mysql', 'enable'):
 		port=config.getint('Mysql', 'port'),
 		user=config.get('Mysql', 'user'),
 		passwd=config.get('Mysql', 'password'),
+		charset='utf8',
+		use_unicode=True,
 	)
 
 elif config.getboolean('Sqlite', 'enable'):
@@ -23,6 +25,8 @@ elif config.getboolean('Postgresql', 'enable'):
 		user=config.get('Postgresql', 'user'),
 		password=config.get('Postgresql', 'password'),
 		host=config.get('Postgresql', 'host'),
+		charset='utf8',
+		use_unicode=True,
 	)
 
 else:
