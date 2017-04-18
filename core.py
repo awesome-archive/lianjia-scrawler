@@ -7,6 +7,8 @@ import urllib2
 import logging
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+#You could modify city at here.
+BASE_URL = u"http://bj.lianjia.com/"
 
 def GetHouseByCommunitylist(communitylist):
     logging.info("Get House Infomation")
@@ -65,19 +67,21 @@ def GetCommunityByRegionlist(regionlist=[u'xicheng']):
     logging.info("Run time: " + str(endtime - starttime))
 
 def get_house_percommunity(communityname):
-    url = u"http://bj.lianjia.com/ershoufang/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
+    url = BASE_URL + u"ershoufang/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
     source_code = misc.get_source_code(url)
     soup = BeautifulSoup(source_code, 'lxml')
+
+    if check_block(soup):
+        return
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
         row = model.Houseinfo.select().count()
         raise RuntimeError("Finish at %s because total_pages is None" % row)
 
-    info_dict_all = {} # if each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
         if page > 0:
-            url_page = u"http://bj.lianjia.com/ershoufang/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
+            url_page = BASE_URL + u"ershoufang/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
             source_code = misc.get_source_code(url_page)
             soup = BeautifulSoup(source_code, 'lxml')
 
@@ -87,12 +91,10 @@ def get_house_percommunity(communityname):
         for name in nameList: # per house loop
             i = i + 1
             info_dict = {}
-            info_dict_all.setdefault(i+page*30, {})
-
             try:
-                housetitle = name.find("div", {"class":"title"})  #html
+                housetitle = name.find("div", {"class":"title"})
                 info_dict.update({u'title':housetitle.get_text().strip()})
-                info_dict.update({u'link':housetitle.a.get('href')}) #atrribute get
+                info_dict.update({u'link':housetitle.a.get('href')})
 
                 houseaddr = name.find("div", {"class":"address"})
                 info = houseaddr.div.get_text().split('|')
@@ -110,7 +112,7 @@ def get_house_percommunity(communityname):
                 info_dict.update({u'followInfo':followInfo.get_text()})
 
                 tax = name.find("div", {"class":"tag"})
-                info_dict.update({u'taxtype':tax.get_text().strip()})#none span
+                info_dict.update({u'taxtype':tax.get_text().strip()})
 
                 totalPrice = name.find("div", {"class":"totalPrice"})
                 info_dict.update({u'totalPrice':int(totalPrice.span.get_text())})
@@ -124,23 +126,24 @@ def get_house_percommunity(communityname):
             model.Houseinfo.insert(**info_dict).upsert().execute()
             model.Hisprice.insert(houseID=info_dict['houseID'], totalPrice=info_dict['totalPrice']).upsert().execute()
 
-            info_dict_all[i+page*30] = info_dict
             time.sleep(1)
 
 def get_sell_percommunity(communityname):
-    url = u"http://bj.lianjia.com/chengjiao/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
+    url = BASE_URL + u"chengjiao/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
     source_code = misc.get_source_code(url)
     soup = BeautifulSoup(source_code, 'lxml')
+
+    if check_block(soup):
+        return
     total_pages = misc.get_total_pages(url)
     
     if total_pages == None:
         row = model.Sellinfo.select().count()
         raise RuntimeError("Finish at %s because total_pages is None" % row)
 
-    info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
         if page > 0:
-            url_page = u"http://bj.lianjia.com/chengjiao/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
+            url_page = BASE_URL + u"chengjiao/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
             source_code = misc.get_source_code(url_page)
             soup = BeautifulSoup(source_code, 'lxml')
         i = 0
@@ -148,12 +151,10 @@ def get_sell_percommunity(communityname):
             for name in ultag.find_all('li'):
                 i = i + 1
                 info_dict = {}
-                info_dict_all.setdefault(i+page*30, {})
-
                 try:
-                    housetitle = name.find("div", {"class":"title"})  #html
+                    housetitle = name.find("div", {"class":"title"})
                     info_dict.update({u'title':housetitle.get_text().strip()})
-                    info_dict.update({u'link':housetitle.a.get('href')})   #atrribute get
+                    info_dict.update({u'link':housetitle.a.get('href')})
                     houseID = int(housetitle.a.get('href').split("/")[-1].split(".")[0])
                     info_dict.update({u'houseID':houseID})
 
@@ -188,15 +189,16 @@ def get_sell_percommunity(communityname):
                 # Sellinfo insert into mysql
                 model.Sellinfo.insert(**info_dict).upsert().execute()
 
-                info_dict_all[i+page*30] = info_dict
                 time.sleep(1)
 
 def get_community_perregion(regionname=u'xicheng'):
-    url = u"http://bj.lianjia.com/xiaoqu/" + regionname +"/"
+    url = BASE_URL + u"xiaoqu/" + regionname +"/"
     source_code = misc.get_source_code(url)
     soup = BeautifulSoup(source_code, 'lxml')
+
+    if check_block(soup):
+        return
     total_pages = misc.get_total_pages(url)
-    info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     
     if total_pages == None:
         row = model.Community.select().count()
@@ -204,7 +206,7 @@ def get_community_perregion(regionname=u'xicheng'):
 
     for page in range(total_pages):
         if page > 0:
-            url_page = u"http://bj.lianjia.com/xiaoqu/" + regionname +"/pg%d/" % (page+1,)
+            url_page = BASE_URL + u"xiaoqu/" + regionname +"/pg%d/" % (page+1,)
             source_code = misc.get_source_code(url_page)
             soup = BeautifulSoup(source_code, 'lxml')
 
@@ -214,40 +216,41 @@ def get_community_perregion(regionname=u'xicheng'):
         for name in nameList: # Per house loop
             i = i + 1
             info_dict = {}
-            info_dict_all.setdefault(i+page*30, {})
+            try:
+                communitytitle = name.find("div", {"class":"title"})
+                info_dict.update({u'title':communitytitle.get_text().strip('\n')})
+                info_dict.update({u'link':communitytitle.a.get('href')})
 
-            communitytitle = name.find("div", {"class":"title"})  #html
-            info_dict.update({u'title':communitytitle.get_text().strip('\n')})
-            info_dict.update({u'link':communitytitle.a.get('href')})   #atrribute get
+                district = name.find("a", {"class":"district"})
+                info_dict.update({u'district':district.get_text()})
+                bizcircle = name.find("a", {"class":"bizcircle"})
+                info_dict.update({u'bizcircle':bizcircle.get_text()})
 
-            district = name.find("a", {"class":"district"})  #html
-            info_dict.update({u'district':district.get_text()})
-            bizcircle = name.find("a", {"class":"bizcircle"})
-            info_dict.update({u'bizcircle':bizcircle.get_text()})
-
-            tagList = name.find("div", {"class":"tagList"})
-            info_dict.update({u'tagList':tagList.get_text().strip('\n')})
-
+                tagList = name.find("div", {"class":"tagList"})
+                info_dict.update({u'tagList':tagList.get_text().strip('\n')})
+            except:
+                continue
             # communityinfo insert into mysql
             model.Community.insert(**info_dict).upsert().execute()
 
-            info_dict_all[i+page*30] = info_dict
             time.sleep(1)
 
 def get_rent_percommunity(communityname):
-    url = u"http://bj.lianjia.com/zufang/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
+    url = BASE_URL + u"zufang/rs" + urllib2.quote(communityname.encode('utf8')) + "/"
     source_code = misc.get_source_code(url)
     soup = BeautifulSoup(source_code, 'lxml')
+
+    if check_block(soup):
+        return
     total_pages = misc.get_total_pages(url)
 
     if total_pages == None:
         row = model.Rentinfo.select().count()
         raise RuntimeError("Finish at %s because total_pages is None" % row)
 
-    info_dict_all = {} # If each house info_dict insert into database ,this info_dict_all is not needed
     for page in range(total_pages):
         if page > 0:
-            url_page = u"http://bj.lianjia.com/rent/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
+            url_page = BASE_URL + u"rent/pg%drs%s/" % (page+1, urllib2.quote(communityname.encode('utf8')))
             source_code = misc.get_source_code(url_page)
             soup = BeautifulSoup(source_code, 'lxml')
         i = 0
@@ -255,12 +258,10 @@ def get_rent_percommunity(communityname):
             for name in ultag.find_all('li'):
                 i = i + 1
                 info_dict = {}
-                info_dict_all.setdefault(i+page*30, {})
-
                 try:
-                    housetitle = name.find("div", {"class":"info-panel"})  #html
+                    housetitle = name.find("div", {"class":"info-panel"})
                     info_dict.update({u'title':housetitle.get_text().strip()})
-                    info_dict.update({u'link':housetitle.a.get('href')})   #atrribute get
+                    info_dict.update({u'link':housetitle.a.get('href')})
                     houseID = int(housetitle.a.get('href').split("/")[-1].split(".")[0])
                     info_dict.update({u'houseID':houseID})
 
@@ -295,5 +296,10 @@ def get_rent_percommunity(communityname):
                 # Rentinfo insert into mysql
                 model.Rentinfo.insert(**info_dict).upsert().execute()
 
-                info_dict_all[i+page*30] = info_dict
                 time.sleep(1)
+
+def check_block(soup):
+    if soup.title.string == "414 Request-URI Too Large":
+        logging.error("Lianjia block your ip, please verify captcha manually at lianjia.com")
+        return True
+    return False
